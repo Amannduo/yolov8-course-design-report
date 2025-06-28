@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>YOLOv8 Flask API 课程设计报告</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="基于PyTorch的目标识别模型在Ubuntu系统中的部署与接口测试 - 课程设计实验报告">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/prismjs@1/themes/prism.css">
+  <style>
+    /* 优化侧边栏样式 */
+    .sidebar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      transition: transform 0.3s ease;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+    
+    .sidebar-toggle {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 0 4px 4px 0;
+      transition: all 0.3s ease;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+    }
+    
+    .sidebar-toggle:hover {
+      transform: scale(1.1);
+      box-shadow: 2px 0 12px rgba(0,0,0,0.3);
+    }
+    
+    .sidebar-nav {
+      padding: 20px 0;
+    }
+    
+    .sidebar-nav li {
+      margin: 0;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    
+    .sidebar-nav li:hover {
+      background: rgba(255,255,255,0.1);
+      transform: translateX(5px);
+    }
+    
+    .sidebar-nav li a {
+      color: rgba(255,255,255,0.9);
+      font-weight: normal;
+      padding: 8px 15px;
+      border-radius: 8px;
+      display: block;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+    
+    .sidebar-nav li a:hover {
+      color: white;
+      background: rgba(255,255,255,0.1);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    
+    .sidebar-nav li.active > a {
+      color: #FFD700;
+      font-weight: 600;
+      background: rgba(255,215,0,0.2);
+      border-left: 3px solid #FFD700;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    }
+    
+    /* 子菜单样式优化 */
+    .sidebar-nav ul {
+      padding-left: 20px;
+      border-left: 2px solid rgba(255,255,255,0.2);
+      margin-left: 15px;
+    }
+    
+    .sidebar-nav ul li a {
+      font-size: 13px;
+      color: rgba(255,255,255,0.8);
+      padding: 6px 12px;
+    }
+    
+    /* 主内容区域 */
+    .markdown-section {
+      max-width: 100%;
+      padding: 30px 15px 40px 15px;
+      line-height: 1.6;
+    }
+    
+    /* 代码块样式优化 */
+    .markdown-section pre {
+      background-color: #f8f9fa;
+      border: 1px solid #e1e4e8;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin: 1.5rem 0;
+      transition: box-shadow 0.3s ease;
+    }
+    
+    .markdown-section pre:hover {
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    /* 表格样式优化 */
+    .markdown-section table {
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 1.5rem 0;
+      overflow: hidden;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background: white;
+    }
+    
+    .markdown-section table th,
+    .markdown-section table td {
+      border: none;
+      border-bottom: 1px solid #e1e4e8;
+      padding: 12px 16px;
+      text-align: left;
+    }
+    
+    .markdown-section table th {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-weight: 600;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    
+    .markdown-section table tbody tr:hover {
+      background-color: #f8f9fa;
+      transition: background-color 0.3s ease;
+    }
+    
+    /* 图片样式 */
+    .markdown-section img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      margin: 1.5rem 0;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .markdown-section img:hover {
+      transform: scale(1.02);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+    
+    /* 提示框样式 */
+    .markdown-section blockquote {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-left: 4px solid #667eea;
+      color: #495057;
+      margin: 1.5rem 0;
+      padding: 1rem 1.5rem;
+      border-radius: 0 8px 8px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    
+    .markdown-section blockquote::before {
+      content: "💡";
+      position: absolute;
+      top: 1rem;
+      left: -12px;
+      background: #667eea;
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+    
+    /* 标题样式优化 */
+    .markdown-section h1 {
+      color: #2c3e50;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 12px;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    
+    .markdown-section h1::after {
+      content: '';
+      position: absolute;
+      bottom: -3px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      border-radius: 2px;
+    }
+    
+    .markdown-section h2 {
+      color: #34495e;
+      border-bottom: 2px solid #ecf0f1;
+      padding-bottom: 8px;
+      margin: 2rem 0 1rem 0;
+    }
+    
+    .markdown-section h3 {
+      color: #667eea;
+      margin: 1.5rem 0 1rem 0;
+    }
+    
+    /* 链接样式 */
+    .markdown-section a {
+      color: #667eea;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-bottom 0.3s ease;
+    }
+    
+    .markdown-section a:hover {
+      border-bottom: 1px solid #667eea;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-300px);
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .markdown-section {
+        padding: 20px 10px;
+      }
+      
+      .markdown-section table {
+        font-size: 14px;
+      }
+    }
+    
+    /* 加载动画 */
+    .app-loading {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    
+    /* 滚动条样式 */
+    .sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .sidebar::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.3);
+      border-radius: 3px;
+    }
+    
+    .sidebar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.5);
+    }
+    
+    /* Mermaid图表样式 */
+    .mermaid {
+      text-align: center;
+      margin: 2rem 0;
+      padding: 1rem;
+      background: #fafafa;
+      border: 1px solid #e1e4e8;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+    
+    .mermaid svg {
+      max-width: 100%;
+      height: auto;
+    }
+    
+    /* 图表容器样式 */
+    .markdown-section .mermaid {
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="app-loading">📚 正在加载课程设计报告...</div>
+  <script>
+    window.$docsify = {
+      name: '🎯 YOLOv8 Flask API 课程设计',
+      repo: 'https://github.com/ultralytics/yolov8',
+      homepage: 'README.md',
+      loadSidebar: true,
+      autoHeader: true,
+      subMaxLevel: 3,
+      maxLevel: 4,
+      auto2top: true,
+      executeScript: true,
+      search: {
+        placeholder: '🔍 搜索报告内容...',
+        noData: '📭 未找到相关内容',
+        depth: 3,
+        hideOtherSidebarContent: false,
+      },
+      count: {
+        countable: true,
+        fontsize: '0.9em',
+        color: 'rgb(90,90,90)',
+        language: 'chinese'
+      },
+      pagination: {
+        previousText: '⬅️ 上一章',
+        nextText: '➡️ 下一章',
+        crossChapter: true,
+        crossChapterText: true
+      },
+      copyCode: {
+        buttonText: '📋 复制',
+        errorText: '❌ 复制失败',
+        successText: '✅ 已复制'
+      },
+      tabs: {
+        persist: true,
+        sync: true,
+        theme: 'classic',
+        tabComments: true,
+        tabHeadings: true
+      },
+      alias: {
+        '/.*/_sidebar.md': '/_sidebar.md',
+      },
+      mermaidConfig: {
+        querySelector: ".mermaid"
+      },
+      plugins: [
+        function(hook, vm) {
+          hook.beforeEach(function(html) {
+            // 添加编辑时间和章节导航
+            const editTime = new Date().toLocaleString('zh-CN');
+            return html + '\n\n---\n\n*📝 最后更新: ' + editTime + ' | 🚀 [返回顶部](#)*\n';
+          });
+          
+          hook.doneEach(function() {
+            // 页面加载完成后的优化
+            console.log('📖 页面加载完成');
+            
+            // 优化代码块
+            document.querySelectorAll('pre code').forEach(block => {
+              block.style.fontSize = '14px';
+              block.style.lineHeight = '1.5';
+            });
+          });
+          
+          hook.mounted(function() {
+            console.log('🎉 报告加载完成');
+          });
+        }
+      ]
+    }
+  </script>
+  
+  <!-- Docsify核心 -->
+  <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
+  
+  <!-- 搜索插件 -->
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
+  
+  <!-- 代码高亮 -->
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-css.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-yaml.min.js"></script>
+  
+  <!-- 复制代码插件 -->
+  <script src="//cdn.jsdelivr.net/npm/docsify-copy-code@2"></script>
+  
+  <!-- 分页导航插件 -->
+  <script src="//cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js"></script>
+  
+  <!-- 字数统计插件 -->
+  <script src="//cdn.jsdelivr.net/npm/docsify-count/dist/countable.min.js"></script>
+  
+  <!-- Tab选项卡插件 -->
+  <script src="//cdn.jsdelivr.net/npm/docsify-tabs@1"></script>
+  
+  <!-- 图片缩放插件 -->
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom-image.min.js"></script>
+  
+  <!-- Mermaid图表支持 -->
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({ 
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        primaryColor: '#667eea',
+        primaryTextColor: '#2c3e50',
+        primaryBorderColor: '#764ba2',
+        lineColor: '#667eea',
+        background: '#ffffff',
+        mainBkg: '#ffffff'
+      },
+      flowchart: {
+        htmlLabels: true,
+        curve: 'basis'
+      }
+    });
+    window.mermaid = mermaid;
+  </script>
+  <script src="//unpkg.com/docsify-mermaid@2.0.1/dist/docsify-mermaid.js"></script>
+  
+  <!-- LaTeX数学公式支持 -->
+  <script src="//cdn.jsdelivr.net/npm/docsify-katex@latest/dist/docsify-katex.js"></script>
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"/>
+</body>
+</html> 
