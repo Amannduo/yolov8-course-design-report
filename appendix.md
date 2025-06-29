@@ -315,6 +315,10 @@ curl -X GET http://localhost:5000/test
 
 ## 参考资料
 
+### 环境配置文档
+
+- [Linux Ubuntu 20.04 安装指南](linux安装.md) - VMware虚拟机环境搭建详细步骤
+  
 ### 技术文档
 
 - [YOLOv8 Official Documentation](https://docs.ultralytics.com/)
